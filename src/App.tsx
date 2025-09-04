@@ -1,15 +1,10 @@
 import "./App.css";
+import { AppRouter } from "./routes/AppRouter";
 
 function App() {
   return (
     <>
-      <div>
-        <h1>Hola mundo</h1>
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-      </div>
-      
+      <AppRouter />
     </>
   );
 }
