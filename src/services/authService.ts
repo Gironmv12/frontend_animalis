@@ -19,7 +19,7 @@ export interface LoginResponse {
 //Servicio de autenticacion
 const authService = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>("/users/login", credentials);
+    const { data } = await api.post<LoginResponse>("users/login", credentials);
     localStorage.setItem("token", data.token);
     // store user without token
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
