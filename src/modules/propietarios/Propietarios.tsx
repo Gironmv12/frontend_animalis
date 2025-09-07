@@ -18,7 +18,6 @@ const Propietarios = () => {
             </Button>
           </Link>
         </div>
-
         <PropietarioTable />
       </div>
   )
