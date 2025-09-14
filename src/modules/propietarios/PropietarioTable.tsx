@@ -164,7 +164,9 @@ function PropietarioTable() {
                     </Link>
                   </Button>
                   <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
+                    <Link to={`/propietarios/editar/${o.id}`}>
+                      <Edit className="h-4 w-4" />
+                    </Link>
                   </Button>
 
                   <Popover

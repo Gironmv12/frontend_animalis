@@ -43,6 +43,12 @@ class PropietarioService {
         return response.data;
     }
 
+    //actualizar un propietario
+    async update(id: number, propietario: Partial<PropietarioCreate> | PropietarioCreate): Promise<Propietario> {
+        const response = await api.put<Propietario>(`/propietarios/${id}`, propietario);
+        return response.data;
+    }
+
     //eliminar un propietario
     async delete(id: number): Promise<void> {
         await api.delete(`/propietarios/${id}`);
