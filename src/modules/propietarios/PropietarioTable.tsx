@@ -13,7 +13,19 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Link } from "react-router-dom"; // <-- Añadir import
+import { Link } from "react-router-dom";
+
+import {
+  Command,
+  CommandList,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function PropietarioTable() {
   const [owners, setOwners] = useState<Propietario[]>([]);
@@ -22,6 +34,11 @@ function PropietarioTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Estados para eliminación/confirmación
+  const [openPopoverId, setOpenPopoverId] = useState<number | null>(null); // controla qué popover está abierto
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const statusColors: Record<string, string> = {
     A: "bg-green-100 text-green-800",
@@ -48,11 +65,36 @@ function PropietarioTable() {
     );
   }, [owners, searchTerm]);
 
-  const totalPages = Math.ceil(filteredOwners.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredOwners.length / itemsPerPage));
   const paginatedOwners = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredOwners.slice(start, start + itemsPerPage);
   }, [filteredOwners, currentPage]);
+
+  const handleDelete = async (id: number) => {
+    setActionError(null);
+    setActionLoading(true);
+    try {
+      await propietarioService.delete(id);
+      // eliminar del estado local
+      setOwners((prev) => prev.filter((o) => o.id !== id));
+
+      // recalcular páginas y ajustar currentPage si es necesario
+      const newFilteredLength = filteredOwners.filter((o) => o.id !== id).length;
+      const newTotalPages = Math.max(1, Math.ceil(newFilteredLength / itemsPerPage));
+      if (currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      }
+
+      // cerrar popover
+      setOpenPopoverId(null);
+    } catch (err) {
+      console.error(err);
+      setActionError("No se pudo eliminar el propietario. Intenta de nuevo.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (loading) return <p className="text-sm text-[--muted-foreground]">Cargando...</p>;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
@@ -67,7 +109,10 @@ function PropietarioTable() {
             <Input
               placeholder="Buscar por nombre, email o teléfono..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // reset página al buscar
+              }}
               className="pl-10 border-gray-200 focus:border-[--primary] focus:ring-[--primary]"
             />
           </div>
@@ -109,7 +154,7 @@ function PropietarioTable() {
                     </div>
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
-                    Última visita: {new Date(o.fechaUltimaVisita).toLocaleDateString("es-ES")}
+                    Última visita: {o.fechaUltimaVisita ? new Date(o.fechaUltimaVisita).toLocaleDateString("es-ES") : "N/A"}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -121,9 +166,64 @@ function PropietarioTable() {
                   <Button variant="ghost" size="sm">
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+
+                  <Popover
+                    open={openPopoverId === o.id}
+                    onOpenChange={(open) => setOpenPopoverId(open ? o.id : null)}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="w-72">
+                      <Alert>
+                        <AlertTitle className="font-medium">Confirmar eliminación</AlertTitle>
+                        <AlertDescription>
+                          ¿Seguro que deseas eliminar a <strong>{o.nombre} {o.apellidos}</strong>? Esta acción no se puede deshacer.
+                        </AlertDescription>
+                      </Alert>
+
+                      {actionError && (
+                        <div className="text-sm text-red-600 mt-2">{actionError}</div>
+                      )}
+
+                      <div className="mt-4 flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOpenPopoverId(null)}
+                          disabled={actionLoading}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(o.id)}
+                          disabled={actionLoading}
+                        >
+                          {actionLoading ? "Eliminando..." : "Eliminar"}
+                        </Button>
+                      </div>
+
+                      {/* Opcional: mostrar opciones adicionales con Command */}
+                      <div className="mt-3">
+                        <Command>
+                          <CommandList>
+                            <CommandItem
+                              onSelect={() => {
+                                // otra acción posible (por ejemplo marcar inactivo) - de momento ejecuta delete también
+                                if (!actionLoading) handleDelete(o.id);
+                              }}
+                            >
+                              Eliminar y notificar
+                            </CommandItem>
+                          </CommandList>
+                        </Command>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             ))}

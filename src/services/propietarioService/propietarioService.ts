@@ -42,6 +42,11 @@ class PropietarioService {
         const response = await api.get<{ propietario: Propietario; mascotas: Mascota[] }>(`/propietarios/${id}/detalle`);
         return response.data;
     }
+
+    //eliminar un propietario
+    async delete(id: number): Promise<void> {
+        await api.delete(`/propietarios/${id}`);
+    }
 }
 
 export default new PropietarioService();
