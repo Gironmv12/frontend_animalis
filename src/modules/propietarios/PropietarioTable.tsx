@@ -5,12 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Search, Mail, Phone, MapPin, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Link } from "react-router-dom"; // <-- Añadir import
 
 function PropietarioTable() {
   const [owners, setOwners] = useState<Propietario[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const statusColors: Record<string, string> = {
     A: "bg-green-100 text-green-800",
@@ -37,6 +49,12 @@ function PropietarioTable() {
     );
   }, [owners, searchTerm]);
 
+  const totalPages = Math.ceil(filteredOwners.length / itemsPerPage);
+  const paginatedOwners = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredOwners.slice(start, start + itemsPerPage);
+  }, [filteredOwners, currentPage]);
+
   if (loading) return <p className="text-sm text-[--muted-foreground]">Cargando...</p>;
   if (error) return <p className="text-sm text-red-600">{error}</p>;
 
@@ -57,13 +75,13 @@ function PropietarioTable() {
         </div>
       </CardHeader>
       <CardContent>
-        {filteredOwners.length === 0 ? (
+        {paginatedOwners.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             {searchTerm ? "No se encontraron propietarios" : "No hay propietarios registrados"}
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredOwners.map((o) => (
+            {paginatedOwners.map((o) => (
               <div
                 key={o.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -96,8 +114,10 @@ function PropietarioTable() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to={`/propietarios/detalles/${o.id}`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
                   </Button>
                   <Button variant="ghost" size="sm">
                     <Edit className="h-4 w-4" />
@@ -110,6 +130,33 @@ function PropietarioTable() {
             ))}
           </div>
         )}
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </CardContent>
     </Card>
   );

@@ -11,7 +11,7 @@ const Propietarios = () => {
             <h1 className="text-3xl font-bold text-[--foreground]">Propietarios</h1>
             <p className="text-gray-600 mt-2">Gestiona la información de los propietarios de mascotas</p>
           </div>
-          <Link to="#">
+          <Link to="/propietarios/crear">
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Propietario
