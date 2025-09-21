@@ -28,7 +28,7 @@ export default function Navbar() {
   const initials = user ? user.nombre.charAt(0).toUpperCase() : "U";
 
   return (
-    <div>
+    <div className="lg:pl-64">
       <div className="flex h-16 items-center justify-between bg-white border-b border-gray-200 px-4 lg:px-6">
         {/* Toggle sidebar button (placeholder) */}
         <Button variant="ghost" size="sm" className="lg:hidden">

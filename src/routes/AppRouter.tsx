@@ -10,6 +10,11 @@ import CrearPropietario from "@/modules/propietarios/CrearPropietario";
 import EditarPropietario from "@/modules/propietarios/EditarPropietario";
 import DetallesPropietario from "@/modules/propietarios/DetallesPropietario";
 
+import CrearMascota from "@/modules/mascotas/CrearMascota";
+import EditarMascota from "@/modules/mascotas/EditarMascota";
+import DetallesMascota from "@/modules/mascotas/DetallesMascota";
+
+
 export const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -27,6 +32,9 @@ export const AppRouter = () => {
           <Route path="/propietarios/detalles/:id" element={<DetallesPropietario />} />
           {/*Mascotas */}
           <Route path="/mascotas" element={<Mascotas />} />
+          <Route path="/mascotas/crear" element={<CrearMascota />} />
+          <Route path="/mascotas/editar/:id" element={<EditarMascota />} />
+          <Route path="/mascotas/detalles/:id" element={<DetallesMascota />} />
           {/*Historial Medico */}
           <Route path="/historialMedico" element={<HistorialMedico />} />
           {/*Reportes */}
