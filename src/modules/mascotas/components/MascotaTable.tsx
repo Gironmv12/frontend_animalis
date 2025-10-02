@@ -126,16 +126,16 @@ export const MascotaTable = () => {
       photoUrl = cleanApi ? `${cleanApi}/files/${encodeURIComponent(fileRef)}` : `/files/${encodeURIComponent(fileRef)}`;
     }
 
-    const age = m.fechaNacimiento
-        ? (() => {
-                try {
-                    const diff = Date.now() - new Date(m.fechaNacimiento).getTime();
-                    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
-                } catch {
-                    return null;
-                }
-            })()
-        : null;
+    // const age = m.fechaNacimiento
+    //     ? (() => {
+    //             try {
+    //                 const diff = Date.now() - new Date(m.fechaNacimiento).getTime();
+    //                 return Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
+    //             } catch {
+    //                 return null;
+    //             }
+    //         })()
+    //     : null;
 
     const rawEstado = (m.estado || "").toString().toLowerCase();
     const mapStatusKey = (s: string): string => {
