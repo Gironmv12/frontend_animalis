@@ -102,10 +102,29 @@ export const MascotaTable = () => {
 
   // Helper: map API Mascota -> PetUI used in the UI
   const mapToUI = (m: Mascota): PetUI => {
-    const apiUrl = import.meta.env.VITE_API_URL || "";
-    const photoUrl = m.foto
-        ? `${apiUrl.replace(/\/$/, "")}/files/${m.foto}`
-        : "/placeholder.svg";
+    const apiUrl = (import.meta.env.VITE_API_URL as string) || "";
+
+    // Construcción robusta de la URL de la foto:
+    // - si m.foto es una URL absoluta, usarla
+    // - si no, preferir el endpoint por id: /mascotas/{id}/foto/view
+    // - fallback a /files/{filename} si hay filename
+    let photoUrl = "/placeholder.svg";
+    const fileRef = m.foto ?? "";
+
+    if (fileRef && /^https?:\/\//i.test(fileRef)) {
+      // ya es una URL absoluta
+      photoUrl = fileRef;
+    } else if (typeof m.idMascota === "number" && !Number.isNaN(m.idMascota)) {
+      // usar endpoint por id (según tu API: mascotas/{id}/foto/view)
+      const cleanApi = apiUrl.replace(/\/$/, "");
+      photoUrl = cleanApi
+        ? `${cleanApi}/mascotas/${m.idMascota}/foto/view`
+        : `/mascotas/${m.idMascota}/foto/view`;
+    } else if (fileRef) {
+      // fallback por filename si no hay id (o el backend expone por filename)
+      const cleanApi = apiUrl.replace(/\/$/, "");
+      photoUrl = cleanApi ? `${cleanApi}/files/${encodeURIComponent(fileRef)}` : `/files/${encodeURIComponent(fileRef)}`;
+    }
 
     const age = m.fechaNacimiento
         ? (() => {
@@ -274,8 +293,8 @@ export const MascotaTable = () => {
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={pet.photo || "/placeholder.svg"} alt={pet.name} />
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg">
+                    <AvatarImage src={pet.photo || "/placeholder.svg"} alt={pet.name}  className="object-cover"/>
+                    <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg ">
                       {(pet.name && pet.name.charAt(0)) || "-"} 
                     </AvatarFallback>
                   </Avatar>
