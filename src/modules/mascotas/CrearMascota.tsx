@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createMascota, uploadMascotaFoto } from "../../services/mascotasService/mascotaService";
 import type {
   CreateMascotaPayload,
