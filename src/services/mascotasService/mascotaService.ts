@@ -93,3 +93,41 @@ export const uploadMascotaFoto = async (id: number, file: File): Promise<any> =>
         throw new Error(message);
     }
 };
+
+/**
+ * Obtiene una mascota por id (GET /mascotas/{id})
+ */
+export const getMascotaById = async (id: number): Promise<Mascota> => {
+    try {
+        const { data } = await api.get<Mascota>(`/mascotas/${id}`);
+        return data;
+    } catch (error: any) {
+        const message = error?.response?.data?.message || error?.message || 'Error al obtener mascota';
+        throw new Error(message);
+    }
+};
+
+/**
+ * Actualiza una mascota (PATCH /mascotas/{id})
+ */
+export const updateMascota = async (id: number, payload: Partial<CreateMascotaPayload>): Promise<Mascota> => {
+    try {
+        const { data } = await api.patch<Mascota>(`/mascotas/${id}`, payload);
+        return data;
+    } catch (error: any) {
+        const message = error?.response?.data?.message || error?.message || 'Error al actualizar mascota';
+        throw new Error(message);
+    }
+};
+
+/**
+ * Elimina una mascota por id (DELETE /mascotas/{id})
+ */
+export const deleteMascota = async (id: number): Promise<void> => {
+    try {
+        await api.delete(`/mascotas/${id}`);
+    } catch (error: any) {
+        const message = error?.response?.data?.message || error?.message || 'Error al eliminar mascota';
+        throw new Error(message);
+    }
+};

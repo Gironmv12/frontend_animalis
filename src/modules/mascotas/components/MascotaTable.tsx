@@ -20,6 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner"
+import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
+import { deleteMascota } from "../../../services/mascotasService/mascotaService";
 
 type PetUI = {
   id: number;
@@ -69,6 +72,10 @@ export const MascotaTable = () => {
   const [mascotas, setMascotas] = useState<Mascota[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // UI filters
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -213,11 +220,29 @@ export const MascotaTable = () => {
     setStatusFilter(value);
   };
 
-  const handleDelete = (id: number) => {
-    // eliminación local simple (en producción deberías llamar a la API)
-    const confirmed = window.confirm("¿Eliminar esta mascota?");
-    if (!confirmed) return;
-    setMascotas((prev) => prev.filter((m) => m.idMascota !== id));
+  const handleDelete = async (id: number) => {
+    setActionError(null);
+    setDeletingId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingId == null) return;
+    setActionLoading(true);
+    try {
+      // intentar eliminar vía API
+      await deleteMascota(deletingId);
+      // eliminar del estado local
+      setMascotas((prev) => prev.filter((m) => m.idMascota !== deletingId));
+      setDeleteDialogOpen(false);
+      setDeletingId(null);
+    } catch (err: any) {
+      // fallback: eliminar localmente si la API falla (o mostrar error)
+      console.error(err);
+      setActionError(err?.message || "No se pudo eliminar la mascota");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (loading) {
@@ -319,12 +344,12 @@ export const MascotaTable = () => {
 
                       <div className="flex items-center gap-1 mt-2">
                         <User className="h-3 w-3" />
-                        <Link
-                          to={`/owners/${pet.ownerId}`}
-                          className="hover:text-emerald-600 hover:underline"
-                        >
-                          {pet.ownerName}
-                        </Link>
+                          <Link
+                            to={`/propietarios/detalles/${pet.ownerId}`}
+                            className="hover:text-emerald-600 hover:underline"
+                          >
+                            {pet.ownerName}
+                          </Link>
                       </div>
 
                       <div className="flex items-center gap-1">
@@ -344,26 +369,32 @@ export const MascotaTable = () => {
                   <span className="text-xs text-gray-500">Microchip: {pet.microchip}</span>
 
                   <div className="flex items-center gap-2">
-                    <Link to={`/pets/${pet.id}`}>
+                    <Link to={`/mascotas/detalles/${pet.id}`}>
                       <Button variant="ghost" size="sm">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
 
-                    <Link to={`/pets/${pet.id}/edit`}>
+                    <Link to={`/mascotas/editar/${pet.id}`}>
                       <Button variant="ghost" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(pet.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {actionLoading && deletingId === pet.id ? (
+                      <Button variant="ghost" size="sm" disabled className="text-red-500">
+                        <Spinner className="h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(pet.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -371,6 +402,30 @@ export const MascotaTable = () => {
           ))
         )}
       </div>
+
+        {/* Diálogo de confirmación para eliminar mascota */}
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={(open) => {
+            setDeleteDialogOpen(open);
+            if (!open) {
+              setDeletingId(null);
+              setActionError(null);
+            }
+          }}
+          onConfirm={confirmDelete}
+          title="Eliminar Mascota"
+          description={
+            deletingId
+              ? `¿Estás seguro de que deseas eliminar la mascota #${deletingId}? Esta acción no se puede deshacer.`
+              : "¿Estás seguro?"
+          }
+          isLoading={actionLoading}
+        />
+
+        {actionError && (
+          <div className="text-sm text-red-600">{actionError}</div>
+        )}
     </div>
   );
 };
