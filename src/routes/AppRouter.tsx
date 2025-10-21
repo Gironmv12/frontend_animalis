@@ -14,6 +14,14 @@ import CrearMascota from "@/modules/mascotas/CrearMascota";
 import EditarMascota from "@/modules/mascotas/EditarMascota";
 import DetallesMascota from "@/modules/mascotas/DetallesMascota";
 
+import CrearHistorial  from "@/modules/historialMedico/CrearHistorial";
+import EditarHsitorial from "@/modules/historialMedico/EditarHsitorial";
+import DetallesHistorial from "@/modules/historialMedico/DetallesHistorial";
+
+
+
+
+
 
 export const AppRouter = () => {
   return (
@@ -37,6 +45,9 @@ export const AppRouter = () => {
           <Route path="/mascotas/detalles/:id" element={<DetallesMascota />} />
           {/*Historial Medico */}
           <Route path="/historialMedico" element={<HistorialMedico />} />
+          <Route path="/historialMedico/crear" element={<CrearHistorial />} />
+          <Route path="/historialMedico/editar/:id" element={<EditarHsitorial />} />
+          <Route path="/historialMedico/detalles/:id" element={<DetallesHistorial />} />
           {/*Reportes */}
           <Route path="/reportes" element={<Reportes />} />
         </Route>
