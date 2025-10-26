@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Users, PawPrint, Stethoscope, BarChart2, LogOut } from "lucide-react";
+import { Users, PawPrint, Stethoscope, BarChart2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import authService from "@/services/authService";
 import Logo from "../../public/img/logo_animalis.svg";
@@ -11,7 +11,6 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: "Inicio", href: "/home", icon: Home },
   { name: "Propietarios", href: "/propietarios", icon: Users },
   { name: "Mascotas", href: "/mascotas", icon: PawPrint },
   { name: "Historial Médico", href: "/historialMedico", icon: Stethoscope },

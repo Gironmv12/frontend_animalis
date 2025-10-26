@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Login from "@/modules/auth/Login";
-import Home from "@/modules/home/Home";
 import Propietarios from "@/modules/propietarios/Propietarios";
 import Mascotas from "@/modules/mascotas/Mascotas";
 import HistorialMedico from "@/modules/historialMedico/HistorialMedico";
@@ -32,7 +31,7 @@ export const AppRouter = () => {
         {/*RUTAS CON LAYOUT (NAVBAR + SIDEBAR) */}
         <Route element={<DashboardLayout />}>
           {/*Home */}
-          <Route path="/home" element={<Home />} />
+          <Route path="/reportes" element={<Reportes />} />
           {/*Propietarios */}
           <Route path="/propietarios" element={<Propietarios />} />
           <Route path="/propietarios/crear" element={<CrearPropietario />} />
@@ -49,7 +48,7 @@ export const AppRouter = () => {
           <Route path="/historialMedico/editar/:id" element={<EditarHsitorial />} />
           <Route path="/historialMedico/detalles/:id" element={<DetallesHistorial />} />
           {/*Reportes */}
-          <Route path="/reportes" element={<Reportes />} />
+          
         </Route>
       </Routes>
     </BrowserRouter>

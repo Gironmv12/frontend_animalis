@@ -32,7 +32,7 @@ export const Login = () => {
     try {
       await authService.login(credentials);
       //redireccionar al home si todo salio bien
-      navigate("/home");
+      navigate("/reportes");
     } catch (err) {
       setError((err as Error).message || "Error al iniciar sesion");
     } finally {
