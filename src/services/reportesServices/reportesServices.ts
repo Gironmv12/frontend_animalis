@@ -37,16 +37,38 @@ export const getVacunasAplicadas = async (start?: string, end?: string): Promise
 	const params: any = {};
 	if (start) params.start = start;
 	if (end) params.end = end;
-	const res = await api.get('/reportes/vacunas-aplicadas', { params });
-	return res.data;
+	const cacheKey = `reportes_vacunas_aplicadas_${start || 'none'}_${end || 'none'}`;
+	try {
+		const res = await api.get('/reportes/vacunas-aplicadas', { params });
+		// cache result
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		return res.data;
+	} catch (err) {
+		// fallback to cache if available
+		try {
+			const cached = localStorage.getItem(cacheKey);
+			if (cached) return JSON.parse(cached).data;
+		} catch {}
+		throw err;
+	}
 };
 
 export const getActividadMensual = async (start?: string, end?: string): Promise<{ vacuna: number; tratamiento: number; cirugia: number; consulta: number }> => {
 	const params: any = {};
 	if (start) params.start = start;
 	if (end) params.end = end;
-	const res = await api.get('/reportes/actividad-mensual', { params });
-	return res.data;
+	const cacheKey = `reportes_actividad_mensual_${start || 'none'}_${end || 'none'}`;
+	try {
+		const res = await api.get('/reportes/actividad-mensual', { params });
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		return res.data;
+	} catch (err) {
+		try {
+			const cached = localStorage.getItem(cacheKey);
+			if (cached) return JSON.parse(cached).data;
+		} catch {}
+		throw err;
+	}
 };
 
 export type DistribucionEspecie = {
@@ -56,6 +78,16 @@ export type DistribucionEspecie = {
 };
 
 export const getDistribucionEspecies = async (): Promise<DistribucionEspecie[]> => {
-	const res = await api.get<DistribucionEspecie[]>('/reportes/distribucion-especies');
-	return res.data;
+	const cacheKey = `reportes_distribucion_especies`;
+	try {
+		const res = await api.get<DistribucionEspecie[]>('/reportes/distribucion-especies');
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		return res.data;
+	} catch (err) {
+		try {
+			const cached = localStorage.getItem(cacheKey);
+			if (cached) return JSON.parse(cached).data;
+		} catch {}
+		throw err;
+	}
 };
