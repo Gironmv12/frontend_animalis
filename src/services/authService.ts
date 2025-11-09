@@ -19,7 +19,12 @@ export interface LoginResponse {
 //Servicio de autenticacion
 const authService = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
-    const { data } = await api.post<LoginResponse>("users/login", credentials);
+    // Login can be slow on free backend; use a shorter timeout and opt-out of automatic retries
+    const { data } = await api.post<LoginResponse>("users/login", credentials, {
+      timeout: 10000,
+      headers: { "x-no-retry": "1" },
+    });
+    // Store token
     localStorage.setItem("token", data.token);
     // store user without token
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

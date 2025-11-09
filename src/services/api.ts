@@ -37,11 +37,15 @@ api.interceptors.response.use(
     // @ts-ignore
     config.__retryCount = config.__retryCount || 0;
 
+    // Respect opt-out header: some endpoints (eg. login) should not be retried
+    const noRetryHeader = config.headers && (config.headers["x-no-retry"] || config.headers["X-No-Retry"]);
+
     // Conditions to retry: network error (no response), timeout (code ECONNABORTED), or 5xx/429
-    const shouldRetry =
+    const shouldRetry = !noRetryHeader && (
       !error.response ||
       error.code === "ECONNABORTED" ||
-      [502, 503, 504, 429].includes(error?.response?.status ?? 0);
+      [502, 503, 504, 429].includes(error?.response?.status ?? 0)
+    );
 
     // @ts-ignore
     if (shouldRetry && config.__retryCount < maxRetries) {
