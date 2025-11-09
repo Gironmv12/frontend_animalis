@@ -75,6 +75,13 @@ const Reportes: React.FC = () => {
       setVacunasAplicadas(va?.total ?? null);
       setActividadMensual(am ?? null);
       setDistribucionEspecies(de || []);
+      // check cache used flags
+      try {
+        const vacunasUsed = !!localStorage.getItem(`reportes_vacunas_aplicadas_${start || 'none'}_${end || 'none'}_used`);
+        const actividadUsed = !!localStorage.getItem(`reportes_actividad_mensual_${start || 'none'}_${end || 'none'}_used`);
+        const distribucionUsed = !!localStorage.getItem(`reportes_distribucion_especies_used`);
+        setCacheUsed({ vacunas: vacunasUsed, actividad: actividadUsed, distribucion: distribucionUsed });
+      } catch {}
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Error al cargar reportes");
@@ -99,6 +106,11 @@ const Reportes: React.FC = () => {
       ]);
       setVacunasAplicadas(va?.total ?? null);
       setActividadMensual(am ?? null);
+      try {
+        const vacunasUsed = !!localStorage.getItem(`reportes_vacunas_aplicadas_${start || 'none'}_${end || 'none'}_used`);
+        const actividadUsed = !!localStorage.getItem(`reportes_actividad_mensual_${start || 'none'}_${end || 'none'}_used`);
+        setCacheUsed((s) => ({ ...s, vacunas: vacunasUsed, actividad: actividadUsed }));
+      } catch {}
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Error al cargar con fechas");
@@ -139,6 +151,8 @@ const Reportes: React.FC = () => {
       color: "text-pink-600",
     },
   ];
+
+  const [cacheUsed, setCacheUsed] = useState<{ vacunas?: boolean; actividad?: boolean; distribucion?: boolean }>({});
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>("12");
 
@@ -197,6 +211,13 @@ const Reportes: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Reportes y Análisis</h1>
           <p className="text-gray-600 mt-2">Estadísticas y métricas de rendimiento de la clínica</p>
         </div>
+
+      {/* Indicador si algunos datos vienen del cache */}
+      {(cacheUsed.vacunas || cacheUsed.actividad || cacheUsed.distribucion) && (
+        <div className="p-2 bg-yellow-50 text-sm text-yellow-800 rounded-md">
+          Mostrando datos en caché: {cacheUsed.vacunas ? "vacunas " : ""}{cacheUsed.actividad ? "actividad " : ""}{cacheUsed.distribucion ? "distribución" : ""}
+        </div>
+      )}
 
       {error && (
         <div style={{ color: "red", marginBottom: 12 }}>Error: {error}</div>

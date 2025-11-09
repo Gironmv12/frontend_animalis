@@ -18,12 +18,18 @@ export interface LoginResponse {
 }
 //Servicio de autenticacion
 const authService = {
-  login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
+  login: async (
+    credentials: LoginCredentials,
+    options?: { signal?: AbortSignal }
+  ): Promise<LoginResponse> => {
     // Login can be slow on free backend; use a shorter timeout and opt-out of automatic retries
-    const { data } = await api.post<LoginResponse>("users/login", credentials, {
+    const config: any = {
       timeout: 10000,
       headers: { "x-no-retry": "1" },
-    });
+    };
+    if (options?.signal) config.signal = options.signal;
+
+    const { data } = await api.post<LoginResponse>("users/login", credentials, config);
     // Store token
     localStorage.setItem("token", data.token);
     // store user without token

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import authService, { type LoginCredentials } from "@/services/authService";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export const Login = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,19 +26,33 @@ export const Login = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performLogin = async (signal?: AbortSignal) => {
     setLoading(true);
     setError("");
     try {
-      await authService.login(credentials);
-      //redireccionar al home si todo salio bien
+      await authService.login(credentials, { signal });
+      // redireccionar al home si todo salio bien
       navigate("/reportes");
-    } catch (err) {
-      setError((err as Error).message || "Error al iniciar sesion");
+    } catch (err: any) {
+      if (err?.name === "CanceledError" || err?.message === "canceled") {
+        setError("Operación cancelada");
+      } else if (err?.code === "ECONNABORTED" || err?.message?.toLowerCase()?.includes("timeout")) {
+        setError("Servidor no responde. Intenta de nuevo.");
+      } else {
+        setError((err as Error).message || "Error al iniciar sesion");
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // cancel previous if any
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    await performLogin(controller.signal);
   };
 
   return (
@@ -100,13 +115,28 @@ export const Login = () => {
             </div>
           </div>
           
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={loading}
-          >
-            {loading ? "Procesando..." : "Iniciar sesión"}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              type="submit" 
+              className="flex-1" 
+              disabled={loading}
+            >
+              {loading ? "Procesando..." : "Iniciar sesión"}
+            </Button>
+            {loading && (
+              <Button variant="outline" type="button" onClick={() => { abortRef.current?.abort(); setLoading(false); setError('Operación cancelada'); }}>
+                Cancelar
+              </Button>
+            )}
+          </div>
+
+          {error && !loading && (
+            <div className="flex justify-center">
+              <Button variant="ghost" onClick={() => { abortRef.current?.abort(); const controller = new AbortController(); abortRef.current = controller; performLogin(controller.signal); }}>
+                Reintentar
+              </Button>
+            </div>
+          )}
         </form>
       </div>
     </div>

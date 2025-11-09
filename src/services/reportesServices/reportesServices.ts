@@ -40,14 +40,17 @@ export const getVacunasAplicadas = async (start?: string, end?: string): Promise
 	const cacheKey = `reportes_vacunas_aplicadas_${start || 'none'}_${end || 'none'}`;
 	try {
 		const res = await api.get('/reportes/vacunas-aplicadas', { params });
-		// cache result
-		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		// cache result and mark as fresh
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); localStorage.removeItem(cacheKey + '_used'); } catch {}
 		return res.data;
 	} catch (err) {
 		// fallback to cache if available
 		try {
 			const cached = localStorage.getItem(cacheKey);
-			if (cached) return JSON.parse(cached).data;
+			if (cached) {
+				try { localStorage.setItem(cacheKey + '_used', '1'); } catch {}
+				return JSON.parse(cached).data;
+			}
 		} catch {}
 		throw err;
 	}
@@ -60,12 +63,15 @@ export const getActividadMensual = async (start?: string, end?: string): Promise
 	const cacheKey = `reportes_actividad_mensual_${start || 'none'}_${end || 'none'}`;
 	try {
 		const res = await api.get('/reportes/actividad-mensual', { params });
-		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); localStorage.removeItem(cacheKey + '_used'); } catch {}
 		return res.data;
 	} catch (err) {
 		try {
 			const cached = localStorage.getItem(cacheKey);
-			if (cached) return JSON.parse(cached).data;
+			if (cached) {
+				try { localStorage.setItem(cacheKey + '_used', '1'); } catch {}
+				return JSON.parse(cached).data;
+			}
 		} catch {}
 		throw err;
 	}
@@ -81,12 +87,15 @@ export const getDistribucionEspecies = async (): Promise<DistribucionEspecie[]> 
 	const cacheKey = `reportes_distribucion_especies`;
 	try {
 		const res = await api.get<DistribucionEspecie[]>('/reportes/distribucion-especies');
-		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); } catch {}
+		try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: res.data })); localStorage.removeItem(cacheKey + '_used'); } catch {}
 		return res.data;
 	} catch (err) {
 		try {
 			const cached = localStorage.getItem(cacheKey);
-			if (cached) return JSON.parse(cached).data;
+			if (cached) {
+				try { localStorage.setItem(cacheKey + '_used', '1'); } catch {}
+				return JSON.parse(cached).data;
+			}
 		} catch {}
 		throw err;
 	}
